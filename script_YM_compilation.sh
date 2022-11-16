@@ -17,13 +17,13 @@ chmod +x configure
 if [ -d lib/.deps ]; then make clean; fi
 
 # standard configuration with gcc + standard -O3 optimizations
-./configure N_c=${NCOLORS} Num_threads=${NTHREADS} CC=gcc CFLAGS='-O3' ${flag_openmp} ${flag_theta}
+#./configure N_c=${NCOLORS} Num_threads=${NTHREADS} CC=gcc CFLAGS='-O3' ${flag_openmp} ${flag_theta}
 
 # optimized configuration for Marconi (optimized compilation with Intel compiler on Intel Skylake processors)
-#./configure N_c=${NCOLORS} Num_threads=${NTHREADS} CC=icc CFLAGS='-O3 -axCORE-AVX512 -mtune=skylake -ip -ipo' LIBS="-ldl -lz -lc" ${flag_openmp} ${flag_theta}
+./configure N_c=${NCOLORS} Num_threads=${NTHREADS} CC=icc CFLAGS='-O3 -axCORE-AVX512 -mtune=skylake -ip -ipo' LIBS="-ldl -lz -lc" ${flag_openmp} ${flag_theta}
 
 # optimized configuration for Galileo100 (optimized compilation with Intel compiler on Intel Cascadelake processors)
 #./configure N_c=${NCOLORS} Num_threads=${NTHREADS} CC=icc CFLAGS='-O3 -axCORE-AVX512 -mtune=cascadelake -ip -ipo' LIBS="-ldl -lz -lc" ${flag_openmp} ${flag_theta}
 
 # compile
-make ${compile_targets}
+make ${compile_targets} # -j 18
