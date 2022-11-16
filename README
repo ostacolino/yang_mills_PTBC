@@ -2,6 +2,13 @@
 ************ PROGRAM FOR SIMULATION OF LATTICE YANG-MILLS THEORIES ***********
 ******************************************************************************
 
+Based on: claudio-bonati/yang-mills
+
+Claudio Bonanno (claudiobonanno93@gmail.com) contributions:
+
+- Parallel Tempering on Boundary Conditions (PTBC)
+- Multicanonic algorithm
+- Chi_Prime and Topcharge Density Time Correlator routines
 
 ** ACTION
 *****************************************************
