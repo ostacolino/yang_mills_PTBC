@@ -665,11 +665,12 @@ void topcharge_timeslices(Gauge_Conf const * const GC,
 		exit(EXIT_FAILURE);
 	}
 
-	long r; int i;
+	long r;
+	int N_t = param->d_size[0];
 
-	for (i=0; i<param->d_size[0]; i++) ris[i]=0.0;
+	for (int i=0; i<N_t; i++) ris[i]=0.0;
 	#ifdef OPENMP_MODE
-	#pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:param->d_size[0])
+	#pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:ris[:N_t])
 	#endif
 	for(r=0; r<(param->d_volume); r++)
 	{
@@ -678,7 +679,7 @@ void topcharge_timeslices(Gauge_Conf const * const GC,
 	}
 
 	fprintf(topchar_tcorr_filep, "%ld %d ", GC->update_index, ncool);
-	for (i=0; i<param->d_size[0]; i++) fprintf(topchar_tcorr_filep, " %.12g", ris[i]);
+	for (int i=0; i<param->d_size[0]; i++) fprintf(topchar_tcorr_filep, " %.12g", ris[i]);
 	fprintf(topchar_tcorr_filep, "\n");
 }
 
