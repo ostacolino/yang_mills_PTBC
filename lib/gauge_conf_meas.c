@@ -639,11 +639,11 @@ double topo_chi_prime(Gauge_Conf const * const GC,
 		exit(EXIT_FAILURE);
 	}
 
-	double ris=0.0, factor=0.125; // factor = 1/8
+	double ris=0.0, factor=0.125; // factor = 1/(2D) = 1/8
 	long r;
 
 	#ifdef OPENMP_MODE
-	#pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+ : ris)
+	#pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:ris)
 	#endif
 	for(r=0; r<(param->d_volume); r++)
 	{
@@ -669,7 +669,7 @@ void topcharge_timeslices(Gauge_Conf const * const GC,
 
 	for (i=0; i<param->d_size[0]; i++) ris[i]=0.0;
 	#ifdef OPENMP_MODE
-	#pragma omp parallel for num_threads(NTHREADS) reduction(+:ris[i]) private(r)
+	#pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:param->d_size[0])
 	#endif
 	for(r=0; r<(param->d_volume); r++)
 	{
