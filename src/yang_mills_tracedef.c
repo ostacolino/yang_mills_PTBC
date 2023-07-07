@@ -27,7 +27,7 @@ void real_main(char *in_file)
     char name[STD_STRING_LENGTH], aux[STD_STRING_LENGTH];
     int count;
     double acc, acc_local;
-    FILE *datafilep;
+    FILE *datafilep, *chiprimefilep, *topchar_tprof_filep;
     time_t time1, time2;
 
     // to disable nested parallelism
@@ -42,7 +42,7 @@ void real_main(char *in_file)
     initrand(param.d_randseed);
 
     // open data_file
-    init_data_file(&datafilep, &param);
+    init_data_file(&datafilep, &chiprimefilep, &topchar_tprof_filep, &param);
 
     // initialize geometry
     init_indexing_lexeo();

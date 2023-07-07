@@ -26,7 +26,7 @@ void real_main(char *in_file)
 
 	char name[STD_STRING_LENGTH], aux[STD_STRING_LENGTH];
 	int count;
-	FILE *datafilep, *chiprimefilep, *topchar_tcorr_filep;
+	FILE *datafilep, *chiprimefilep, *topchar_tprof_filep;
 	time_t time1, time2;
 
 	// to disable nested parallelism
@@ -42,7 +42,7 @@ void real_main(char *in_file)
 	initrand(param.d_randseed);
 
 	// open data_file
-	init_data_file(&datafilep, &chiprimefilep, &topchar_tcorr_filep, &param);
+	init_data_file(&datafilep, &chiprimefilep, &topchar_tprof_filep, &param);
 
 	// initialize geometry
 	init_indexing_lexeo();
@@ -84,7 +84,7 @@ void real_main(char *in_file)
 	time(&time1);
 	if (param.d_sample == 0) // no update is done, only measures are performed on read configuration
 	{
-		perform_measures_localobs(&GC, &geo, &param, datafilep, chiprimefilep, topchar_tcorr_filep);
+		perform_measures_localobs(&GC, &geo, &param, datafilep, chiprimefilep, topchar_tprof_filep);
 	}
 	else
 	{
@@ -96,7 +96,7 @@ void real_main(char *in_file)
 			// measure local observables
 			if(GC.update_index % param.d_measevery == 0 && GC.update_index >= param.d_thermal)
 			{
-				perform_measures_localobs(&GC, &geo, &param, datafilep, chiprimefilep, topchar_tcorr_filep);
+				perform_measures_localobs(&GC, &geo, &param, datafilep, chiprimefilep, topchar_tprof_filep);
 			}
 
 			// save configuration for backup
@@ -132,7 +132,7 @@ void real_main(char *in_file)
 	// close data file
 	fclose(datafilep);
 	if (param.d_chi_prime_meas==1) fclose(chiprimefilep);
-	if (param.d_topcharge_tcorr_meas==1) fclose(topchar_tcorr_filep);
+	if (param.d_topcharge_tprof_meas==1) fclose(topchar_tprof_filep);
 
 	// save configuration
 	if(param.d_saveconf_back_every!=0)
@@ -179,13 +179,13 @@ void print_template_input(void)
 		fprintf(fp, "coolsteps             3  # number of cooling steps to be used\n");
 		fprintf(fp, "coolrepeat            5  # number of times 'coolsteps' are repeated\n");
 		fprintf(fp, "chi_prime_meas        0  # 1=YES, 0=NO\n");
-		fprintf(fp, "topcharge_tcorr_meas  0  # 1=YES, 0=NO\n");
+		fprintf(fp, "topcharge_tprof_meas  0  # 1=YES, 0=NO\n");
 		fprintf(fp,"\n");
 		fprintf(fp, "#output files\n");
 		fprintf(fp, "conf_file             conf.dat\n");
 		fprintf(fp, "data_file             dati.dat\n");
 		fprintf(fp, "chiprime_data_file    chiprime_cool.dat\n");
-		fprintf(fp, "topcharge_tcorr_file  topo_tcorr_cool.dat\n");
+		fprintf(fp, "topcharge_tprof_file  topo_tcorr_cool.dat\n");
 		fprintf(fp, "log_file              log.dat\n");
 		fprintf(fp, "\n");
 		fprintf(fp, "randseed 0    #(0=time)\n");

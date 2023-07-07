@@ -88,7 +88,7 @@ void readinput(char *in_file, GParam *param)
 		
 		// default = do not compute chi_prime
 		param->d_chi_prime_meas = 0;
-		param->d_topcharge_tcorr_meas = 0;
+		param->d_topcharge_tprof_meas = 0;
 
     input=fopen(in_file, "r"); // open the input file
     if(input==NULL)
@@ -277,7 +277,7 @@ void readinput(char *in_file, GParam *param)
 										}
                   }
 
-           else if(strncmp(str, "topcharge_tcorr_meas", 20)==0)
+           else if(strncmp(str, "topcharge_tprof_meas", 20)==0)
                   {
                   err=fscanf(input, "%d", &temp_i);
                   if(err!=1)
@@ -285,7 +285,7 @@ void readinput(char *in_file, GParam *param)
                     fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
                     exit(EXIT_FAILURE);
                     }
-									if ( (temp_i == 1) || (temp_i == 0 ) ) param->d_topcharge_tcorr_meas=temp_i;
+									if ( (temp_i == 1) || (temp_i == 0 ) ) param->d_topcharge_tprof_meas=temp_i;
 									else
 										{
 											fprintf(stderr, "Error: chi_prime_meas must be either 0 or 1 in %s (%s, %d)\n", in_file, __FILE__, __LINE__);
@@ -293,7 +293,7 @@ void readinput(char *in_file, GParam *param)
 										}
                   }
 									
-           else if(strncmp(str, "topcharge_tcorr_file", 20)==0)
+           else if(strncmp(str, "topcharge_tprof_file", 20)==0)
                   { 
                   err=fscanf(input, "%s", temp_str);
                   if(err!=1)
@@ -301,7 +301,7 @@ void readinput(char *in_file, GParam *param)
                     fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
                     exit(EXIT_FAILURE);
                     }
-                  strcpy(param->d_topcharge_tcorr_file, temp_str);
+                  strcpy(param->d_topcharge_tprof_file, temp_str);
                   }
 
            else if(strncmp(str, "gfstep", 6)==0) // integration step
@@ -818,17 +818,17 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 			(void) chiprimef;
 		}
 		// open topocharge_tcorr data file
-		if (param->d_topcharge_tcorr_meas == 1)
+		if (param->d_topcharge_tprof_meas == 1)
 		{
-			*topchar_tcorr_f=fopen(param->d_topcharge_tcorr_file, "r");
+			*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "r");
 			if(*topchar_tcorr_f!=NULL) // file exists
 			{
 				fclose(*topchar_tcorr_f);
-				*topchar_tcorr_f=fopen(param->d_topcharge_tcorr_file, "a");
+				*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "a");
 			}
 			else
 			{
- 				*topchar_tcorr_f=fopen(param->d_topcharge_tcorr_file, "w");
+ 				*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "w");
 				fprintf(*topchar_tcorr_f, "%d ", STDIM);
 				for(i=0; i<STDIM; i++) fprintf(*topchar_tcorr_f, "%d ", param->d_size[i]);
       	fprintf(*topchar_tcorr_f, "\n");
@@ -862,9 +862,9 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 			(void) chiprimef;
 		}
 		// open topocharge_tcorr data file
-		if (param->d_topcharge_tcorr_meas == 1)
+		if (param->d_topcharge_tprof_meas == 1)
 		{
-    	*topchar_tcorr_f=fopen(param->d_topcharge_tcorr_file, "w");
+    	*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "w");
     	fprintf(*topchar_tcorr_f, "%d ", STDIM);
     	for(i=0; i<STDIM; i++) fprintf(*topchar_tcorr_f, "%d ", param->d_size[i]);
     	fprintf(*topchar_tcorr_f, "\n");
@@ -880,7 +880,7 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 		{
 			(void) chiprimef;
 		}
-	if (param->d_topcharge_tcorr_meas == 1 ) fflush(*topchar_tcorr_f);
+	if (param->d_topcharge_tprof_meas == 1 ) fflush(*topchar_tcorr_f);
 	else 
 		{
 			(void) topchar_tcorr_f;

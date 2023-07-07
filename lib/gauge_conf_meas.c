@@ -657,7 +657,7 @@ double topo_chi_prime(Gauge_Conf const * const GC,
 
 void topcharge_timeslices(Gauge_Conf const * const GC,
                  Geometry const * const geo,
-                 GParam const * const param, double *ris, int ncool, FILE *topchar_tcorr_filep)
+                 GParam const * const param, double *ris, int ncool, FILE *topchar_tprof_filep)
 {
 	if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
 	{
@@ -678,65 +678,19 @@ void topcharge_timeslices(Gauge_Conf const * const GC,
 		ris[t] += loc_topcharge(GC, geo, param, r);
 	}
 
-	fprintf(topchar_tcorr_filep, "%ld %d ", GC->update_index, ncool);
-	for (int i=0; i<param->d_size[0]; i++) fprintf(topchar_tcorr_filep, " %.12g", ris[i]);
-	fprintf(topchar_tcorr_filep, "\n");
+	fprintf(topchar_tprof_filep, "%ld %d ", GC->update_index, ncool);
+	for (int i=0; i<param->d_size[0]; i++) fprintf(topchar_tprof_filep, " %.12g", ris[i]);
+	fprintf(topchar_tprof_filep, "\n");
 }
 
-void topcharge_timeslices_cooling(Gauge_Conf const * const GC,
-                 Geometry const * const geo,
-                 GParam const * const param, FILE *topchar_tcorr_filep)
-{
-	if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
-	{
-		fprintf(stderr, "Wrong number of dimensions or number of colors! (%s, %d)\n", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
-	}
-	
-	double *sum_q_timeslices;
-
-	int err=posix_memalign((void**) &(sum_q_timeslices), (size_t) DOUBLE_ALIGN, (size_t) param->d_size[0]*sizeof(double));
-	if(err!=0)
-	{
-		fprintf(stderr, "Problems in allocating the aux vector for topcharge tcorr meas! (%s, %d)\n", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
-	}	
-
-	if(param->d_coolsteps>0)  // if using cooling
-	{  
-		Gauge_Conf helperconf;
-		int iter;
-
-		// measure no cooling
-		topcharge_timeslices(GC, geo, param, sum_q_timeslices, 0, topchar_tcorr_filep); 
-		// conf that will be cooled
-		init_gauge_conf_from_gauge_conf(&helperconf, GC, param); // helperconf is a copy of the configuration
-		// measure with cooling
-		for(iter=0; iter<(param->d_coolrepeat); iter++)
-		{
-			cooling(&helperconf, geo, param, param->d_coolsteps);
-			topcharge_timeslices(&helperconf, geo, param, sum_q_timeslices, (iter+1)*param->d_coolsteps, topchar_tcorr_filep);
-		}
-		free_gauge_conf(&helperconf, param);
-		fflush(topchar_tcorr_filep);
-	}
-	else // no cooling
-	{
-		topcharge_timeslices(GC, geo, param, sum_q_timeslices, 0, topchar_tcorr_filep);
-		fflush(topchar_tcorr_filep);
-	}
-	free(sum_q_timeslices);
-}
-
-
-// compute topological observables (Q, chi_prime) after some cooling
+// compute topological observables (Q, chi_prime, Q(t)) after some cooling
 // in the cooling procedure the action at theta=0 is minimized
 void topo_obs_cooling(Gauge_Conf const * const GC,
                        Geometry const * const geo,
                        GParam const * const param,
                        double *charge,
 											 double *chi_prime,
-                       double *meanplaq)
+                       double *meanplaq,	double *sum_q_timeslices, FILE *topchar_tprof_filep)
    {
    if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
      {
@@ -760,8 +714,21 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
         ris=topcharge(&helperconf, geo, param);
         charge[iter]=ris;
 
-				ris=topo_chi_prime(&helperconf, geo, param);
-				chi_prime[iter]=ris;
+				if (param->d_chi_prime_meas == 1)
+				{
+					ris=topo_chi_prime(&helperconf, geo, param);
+					chi_prime[iter]=ris;
+				}
+				else
+				{
+					(void) chi_prime;
+				}
+			
+				if (param->d_topcharge_tprof_meas == 1)	topcharge_timeslices(&helperconf, geo, param, sum_q_timeslices, (iter+1)*param->d_coolsteps, topchar_tprof_filep);
+				else
+				{
+					(void) sum_q_timeslices;
+				}
 
         plaquette(&helperconf, geo, param, &plaqs, &plaqt);
         #if(STDIM==4)
@@ -771,6 +738,8 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
         #endif
         }
 
+		 if (param->d_topcharge_tprof_meas == 1) fflush(topchar_tprof_filep);
+		 else (void) topchar_tprof_filep;
      free_gauge_conf(&helperconf, param); 
      }
    else   // no cooling
@@ -779,7 +748,8 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
      int iter;
 
      ris=topcharge(GC, geo, param);
-		 ris2=topo_chi_prime(GC, geo, param);
+		 if (param->d_chi_prime_meas == 1) ris2=topo_chi_prime(GC, geo, param);
+		 else (void) ris2;
      plaquette(GC, geo, param, &plaqs, &plaqt);
   
      for(iter=0; iter<(param->d_coolrepeat); iter++)
@@ -993,15 +963,18 @@ void loc_topcharge_corr(Gauge_Conf const * const GC,
 void perform_measures_localobs(Gauge_Conf *GC,
                                Geometry const * const geo,
                                GParam const * const param,
-                               FILE *datafilep, FILE *chiprimefilep, FILE *topchar_tcorr_filep)
+                               FILE *datafilep, FILE *chiprimefilep, FILE *topchar_tprof_filep)
    {
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
      int i, err;
      double plaqs, plaqt, polyre, polyim, *charge, *chi_prime, *meanplaq, charge_nocooling, chi_prime_nocooling;
+		 double *sum_q_timeslices;
 
+		 // measure plaquette and polyakov loop
      plaquette(GC, geo, param, &plaqs, &plaqt);
      polyakov(GC, geo, param, &polyre, &polyim);
 		 
+		 // measure topological charge, chi_prime and topological charge profile at 0 cooling
      charge_nocooling=topcharge(GC, geo, param);
 		 if (param->d_chi_prime_meas == 1 ) chi_prime_nocooling=topo_chi_prime(GC, geo, param);
 
@@ -1010,6 +983,19 @@ void perform_measures_localobs(Gauge_Conf *GC,
 
      fprintf(datafilep, "%ld %.12g %.12g %.12g %.12g %.12g ", GC->update_index, plaqs, plaqt, polyre, polyim, charge_nocooling);
 		 if (param->d_chi_prime_meas == 1 ) fprintf(chiprimefilep, "%ld 0 %.12lg\n", GC->update_index, chi_prime_nocooling);
+	
+		 if (param->d_topcharge_tprof_meas == 1)
+		 {
+			int err=posix_memalign((void**) &(sum_q_timeslices), (size_t) DOUBLE_ALIGN, (size_t) param->d_size[0]*sizeof(double));
+			if(err!=0)
+			{
+				fprintf(stderr, "Problems in allocating the aux vector for topcharge tcorr meas! (%s, %d)\n", __FILE__, __LINE__);
+				exit(EXIT_FAILURE);
+			}
+			topcharge_timeslices(GC, geo, param, sum_q_timeslices, 0, topchar_tprof_filep);
+  		fflush(topchar_tprof_filep);
+		 }
+		 else { (void) sum_q_timeslices; }
 
      err=posix_memalign((void**)&charge, (size_t)DOUBLE_ALIGN, (size_t) param->d_coolrepeat * sizeof(double));
      if(err!=0)
@@ -1035,10 +1021,9 @@ void perform_measures_localobs(Gauge_Conf *GC,
        exit(EXIT_FAILURE);
        }
 
-		 if (param->d_topcharge_tcorr_meas == 1 ) topcharge_timeslices_cooling(GC, geo, param, topchar_tcorr_filep);
-		 else {(void) topchar_tcorr_filep;}
-     if (param->d_chi_prime_meas == 1 ) topo_obs_cooling(GC, geo, param, charge, chi_prime, meanplaq);
+		 if (param->d_chi_prime_meas == 1 || param->d_topcharge_tprof_meas == 1 ) topo_obs_cooling(GC, geo, param, charge, chi_prime, meanplaq, sum_q_timeslices, topchar_tprof_filep);
 		 else topcharge_cooling(GC, geo, param, charge, meanplaq);
+
      for(i=0; i<param->d_coolrepeat; i++)
         {
         fprintf(datafilep, "%.12g %.12g ", charge[i], meanplaq[i]);

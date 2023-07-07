@@ -196,9 +196,6 @@ double topcharge(Gauge_Conf const * const GC,
 void topcharge_timeslices(Gauge_Conf const * const GC,
                  Geometry const * const geo,
                  GParam const * const param, double *ris, int ncool, FILE*);
-void topcharge_timeslices_cooling(Gauge_Conf const * const GC,
-                 Geometry const * const geo,
-                 GParam const * const param, FILE*);
 double topo_chi_prime(Gauge_Conf const * const GC,
                  Geometry const * const geo,
                  GParam const * const param);
@@ -207,7 +204,7 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
                        GParam const * const param,
                        double *charge,
 											 double *chi_prime,
-                       double *meanplaq);
+                       double *meanplaq, double *sum_q_timeslices, FILE *topchar_tprof_filep);
 void topcharge_cooling(Gauge_Conf const * const GC,
                        Geometry const * const geo,
                        GParam const * const param,
