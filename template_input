@@ -16,7 +16,7 @@ topo_potential_file   ToPotential
 # Simulation parameters
 beta       6.0
 theta      0.0
-sample     1
+sample     10
 thermal    0
 overrelax  4
 measevery  1
@@ -29,14 +29,14 @@ saveconf_analysis_every  0     # if 0 does not save, else save configurations fo
 # cooling
 coolsteps             5   # number of cooling steps to be used
 coolrepeat            10  # number of times <coolsteps> are repeated (=> <coolsteps> * <coolrepeat> cooling steps are done, cool meas taken every <coolsteps> steps)
-chi_prime_meas        0   # 1=YES, 0=NO (YES = compute chi_prime, NO = do not compute chi_prime)
-topcharge_tcorr_meas  0   # 1=YES, 0=NO (YES = compute topcharge_tcorr, NO = do not compute topcharge_tcorr)
+chi_prime_meas        1   # 1=YES, 0=NO (YES = compute chi_prime, NO = do not compute chi_prime)
+topcharge_tprof_meas  1   # 1=YES, 0=NO (YES = compute topcharge_tprof, NO = do not compute topcharge_tprof)
 
 # output files
 conf_file                conf.dat
 data_file                dati.dat
 chiprime_data_file       chi_prime_cool.dat   # chi_prime cool measures are written here only if chi_prime_meas==1
-topcharge_tcorr_file     topo_tcorr_cool.dat  # topcharge_tcorr cool measures are written here only if topcharge_tcorr_meas==1
+topcharge_tprof_file     topo_tprof_cool.dat  # topcharge_tprof cool measures are written here only if topcharge_tprof_meas==1
 log_file                 log.dat
 swap_acc_file            swap_acc.dat
 swap_track_file          swap_track.dat
