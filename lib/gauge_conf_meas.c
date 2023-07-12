@@ -989,7 +989,7 @@ void perform_measures_localobs(Gauge_Conf *GC,
 			int err=posix_memalign((void**) &(sum_q_timeslices), (size_t) DOUBLE_ALIGN, (size_t) param->d_size[0]*sizeof(double));
 			if(err!=0)
 			{
-				fprintf(stderr, "Problems in allocating the aux vector for topcharge tcorr meas! (%s, %d)\n", __FILE__, __LINE__);
+				fprintf(stderr, "Problems in allocating the aux vector for topcharge tprof meas! (%s, %d)\n", __FILE__, __LINE__);
 				exit(EXIT_FAILURE);
 			}
 			topcharge_timeslices(GC, geo, param, sum_q_timeslices, 0, topchar_tprof_filep);

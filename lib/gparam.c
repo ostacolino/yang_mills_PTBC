@@ -776,7 +776,7 @@ void init_derived_constants(GParam *param)
 
 
 // initialize data file
-void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GParam const * const param)
+void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, GParam const * const param)
 {
 	int i;
 
@@ -817,26 +817,26 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 		{
 			(void) chiprimef;
 		}
-		// open topocharge_tcorr data file
+		// open topocharge_tprof data file
 		if (param->d_topcharge_tprof_meas == 1)
 		{
-			*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "r");
-			if(*topchar_tcorr_f!=NULL) // file exists
+			*topchar_tprof_f=fopen(param->d_topcharge_tprof_file, "r");
+			if(*topchar_tprof_f!=NULL) // file exists
 			{
-				fclose(*topchar_tcorr_f);
-				*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "a");
+				fclose(*topchar_tprof_f);
+				*topchar_tprof_f=fopen(param->d_topcharge_tprof_file, "a");
 			}
 			else
 			{
- 				*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "w");
-				fprintf(*topchar_tcorr_f, "%d ", STDIM);
-				for(i=0; i<STDIM; i++) fprintf(*topchar_tcorr_f, "%d ", param->d_size[i]);
-      	fprintf(*topchar_tcorr_f, "\n");
+ 				*topchar_tprof_f=fopen(param->d_topcharge_tprof_file, "w");
+				fprintf(*topchar_tprof_f, "%d ", STDIM);
+				for(i=0; i<STDIM; i++) fprintf(*topchar_tprof_f, "%d ", param->d_size[i]);
+      	fprintf(*topchar_tprof_f, "\n");
 			}
 		}
 		else
 		{
-			(void) topchar_tcorr_f;
+			(void) topchar_tprof_f;
 		}
 	}
 	else
@@ -861,17 +861,17 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 		{
 			(void) chiprimef;
 		}
-		// open topocharge_tcorr data file
+		// open topocharge_tprof data file
 		if (param->d_topcharge_tprof_meas == 1)
 		{
-    	*topchar_tcorr_f=fopen(param->d_topcharge_tprof_file, "w");
-    	fprintf(*topchar_tcorr_f, "%d ", STDIM);
-    	for(i=0; i<STDIM; i++) fprintf(*topchar_tcorr_f, "%d ", param->d_size[i]);
-    	fprintf(*topchar_tcorr_f, "\n");
+    	*topchar_tprof_f=fopen(param->d_topcharge_tprof_file, "w");
+    	fprintf(*topchar_tprof_f, "%d ", STDIM);
+    	for(i=0; i<STDIM; i++) fprintf(*topchar_tprof_f, "%d ", param->d_size[i]);
+    	fprintf(*topchar_tprof_f, "\n");
 		}
 		else
 		{
-			(void) topchar_tcorr_f;
+			(void) topchar_tprof_f;
 		}
 	}
 	fflush(*dataf);
@@ -880,10 +880,10 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tcorr_f, GPar
 		{
 			(void) chiprimef;
 		}
-	if (param->d_topcharge_tprof_meas == 1 ) fflush(*topchar_tcorr_f);
+	if (param->d_topcharge_tprof_meas == 1 ) fflush(*topchar_tprof_f);
 	else 
 		{
-			(void) topchar_tcorr_f;
+			(void) topchar_tprof_f;
 		}
 }
 
