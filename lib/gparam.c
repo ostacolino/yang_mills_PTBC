@@ -948,6 +948,7 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, FILE
       *topchar_MOM_tprof_f=fopen(param->d_topcharge_MOM_tprof_file, "w");
       fprintf(*topchar_MOM_tprof_f, "%d ", STDIM);
       for(i=0; i<STDIM; i++) fprintf(*topchar_MOM_tprof_f, "%d ", param->d_size[i]);
+      fprintf(*topchar_MOM_tprof_f, "%d ", param->d_topcharge_MOM_tprof_dir);
       fprintf(*topchar_MOM_tprof_f, "\n");
     }
     else
