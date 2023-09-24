@@ -30,7 +30,7 @@ void real_main(char *in_file)
 		double *grid;
     char name[STD_STRING_LENGTH], aux[STD_STRING_LENGTH];
     int count;
-    FILE *datafilep, *chiprimefilep, *swaptrackfilep, *multicanonic_acc_filep, *topchar_tprof_filep;
+    FILE *datafilep, *chiprimefilep, *swaptrackfilep, *multicanonic_acc_filep, *topchar_tprof_filep, *topchar_MOM_tprof_filep;
     time_t time1, time2;
 
 
@@ -47,7 +47,7 @@ void real_main(char *in_file)
     initrand(param.d_randseed);
 
     // open data_file
-    init_data_file(&datafilep, &chiprimefilep, &topchar_tprof_filep, &param);
+    init_data_file(&datafilep, &chiprimefilep, &topchar_tprof_filep, &topchar_MOM_tprof_filep, &param);
 		
 	// open swap tracking file
 	init_swap_track_file(&swaptrackfilep, &param);
@@ -93,7 +93,7 @@ void real_main(char *in_file)
 		// perform measures only on homogeneous configuration
 		if(GC[0].update_index % param.d_measevery == 0 && GC[0].update_index >= param.d_thermal)
 		{
-			perform_measures_localobs(&(GC[0]), &geo, &param, datafilep, chiprimefilep, topchar_tprof_filep); // N.B. Here, the stored running charge of GC[0] is refreshed
+			perform_measures_localobs(&(GC[0]), &geo, &param, datafilep, chiprimefilep, topchar_tprof_filep, topchar_MOM_tprof_filep); // N.B. Here, the stored running charge of GC[0] is refreshed
 			refresh_topo_charge_replica(GC, &geo, &param); // refresh topological charge also for the other replicas
 		}
 

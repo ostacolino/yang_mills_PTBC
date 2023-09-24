@@ -204,7 +204,8 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
                        GParam const * const param,
                        double *charge,
 											 double *chi_prime,
-                       double *meanplaq, double *sum_q_timeslices, FILE *topchar_tprof_filep);
+                       double *meanplaq, double *sum_q_timeslices, FILE *topchar_tprof_filep,
+                                        double complex *sum_q_MOM_timeslices, FILE *topchar_MOM_tprof_filep);
 void topcharge_cooling(Gauge_Conf const * const GC,
                        Geometry const * const geo,
                        GParam const * const param,
@@ -219,7 +220,7 @@ void loc_topcharge_corr(Gauge_Conf const * const GC,
 void perform_measures_localobs(Gauge_Conf *GC,
                                Geometry const * const geo,
                                GParam const * const param,
-                               FILE *datafilep, FILE *chiprimefilep, FILE*);
+                               FILE *datafilep, FILE *chiprimefilep, FILE*, FILE*);
 void perform_measures_localobs_with_tracedef(Gauge_Conf const * const GC,
                                              Geometry const * const geo,
                                              GParam const * const param,

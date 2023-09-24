@@ -657,8 +657,7 @@ double topo_chi_prime(Gauge_Conf const * const GC,
 
 void topcharge_timeslices(Gauge_Conf const * const GC,
                  Geometry const * const geo,
-                 GParam const * const param, double *ris, int ncool, FILE *topchar_tprof_filep)
-{
+                 GParam const * const param, double *ris, int ncool, FILE *topchar_tprof_filep){
 	if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
 	{
 		fprintf(stderr, "Wrong number of dimensions or number of colors! (%s, %d)\n", __FILE__, __LINE__);
@@ -683,6 +682,94 @@ void topcharge_timeslices(Gauge_Conf const * const GC,
 	fprintf(topchar_tprof_filep, "\n");
 }
 
+void FT_topcharge_timeslices(Gauge_Conf const * const GC,
+                 Geometry const * const geo,
+                 GParam const * const param, double complex *ris, int ncool, FILE *topchar_MOM_tprof_filep){
+   if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
+   {
+      fprintf(stderr, "Wrong number of dimensions or number of colors! (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+   }
+
+   long r;
+   int N_t = param->d_size[0];
+   int N_s = param->d_size[1]; 
+   int coordinate[STDIM];     
+   int n_i;                    
+   double inv_N_s = 1./N_s;
+   double fase;
+
+   for(int kappa = 0; kappa<1; kappa++){       
+      for (int i=0; i<N_t; i++) {ris[i]=0.0+I*0.0;}
+      #ifdef OPENMP_MODE
+      #pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:ris[:N_t])
+      #endif
+      for(r=0; r<(param->d_volume); r++)
+      {
+         int t = geo->d_timeslice[r];
+         si_to_cart(coordinate,r,param);
+         n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
+
+         fase = (double) PI2 * n_i * inv_N_s * kappa ;
+         ris[t] += loc_topcharge(GC, geo, param, r)*cexp(I*fase);
+      }
+
+      fprintf(topchar_MOM_tprof_filep, "%ld %d %d ", GC->update_index, ncool, kappa);
+      for (int i=0; i<param->d_size[0]; i++) fprintf(topchar_MOM_tprof_filep, " %.12g %.12g", creal(ris[i]), cimag(ris[i]));
+      fprintf(topchar_MOM_tprof_filep, "\n");
+   }
+
+   double complex **zp;
+   int err=posix_memalign((void**)&zp, (size_t)2*DOUBLE_ALIGN, (size_t)N_s/2 * sizeof(complex*));
+   if (err!=0){
+        fprintf(stderr, "Problems in allocating a vector (%s, %d)\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+        }
+   for(int i = 0; i<N_s/2;i++){
+      err=posix_memalign((void**)&zp[i], (size_t)2*DOUBLE_ALIGN, (size_t)N_t*sizeof(complex));
+      if (err!=0){
+        fprintf(stderr, "Problems in allocating a vector (%s, %d)\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+        }
+   }
+
+
+   for(int kappa = 1; kappa<=(N_s)/2; kappa++){       
+      for (int i=0; i<N_t; i++) {ris[i]=0.0+I*0.0;}
+      #ifdef OPENMP_MODE
+      #pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:ris[:N_t])
+      #endif
+      for(r=0; r<(param->d_volume); r++)
+      {
+         int t = geo->d_timeslice[r];
+         si_to_cart(coordinate,r,param);
+         n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
+
+         fase = (double) PI2 * n_i * inv_N_s * kappa ;
+         ris[t] += loc_topcharge(GC, geo, param, r)*cexp(I*fase);
+      }
+
+      fprintf(topchar_MOM_tprof_filep, "%ld %d %d ", GC->update_index, ncool, kappa);
+      for (int i=0; i<param->d_size[0]; i++){
+         fprintf(topchar_MOM_tprof_filep, " %.12g %.12g", creal(ris[i]), cimag(ris[i]));
+         zp[kappa-1][i] = ris[i];
+      }
+      fprintf(topchar_MOM_tprof_filep, "\n");
+   }
+   for(int kappa = (N_s)/2+1; kappa<N_s; kappa++){       
+      
+
+      fprintf(topchar_MOM_tprof_filep, "%ld %d %d ", GC->update_index, ncool, kappa);
+      for (int i=0; i<param->d_size[0]; i++) {
+         //stampo il complesso coniugato che ho memorizzato per dimezzare i tempi.
+         fprintf(topchar_MOM_tprof_filep, " %.12g %.12g", creal(zp[N_s-kappa-1][i]), -cimag(zp[N_s-kappa-1][i]));
+
+      }
+      fprintf(topchar_MOM_tprof_filep, "\n");
+   }
+   free(zp);
+}
+
 // compute topological observables (Q, chi_prime, Q(t)) after some cooling
 // in the cooling procedure the action at theta=0 is minimized
 void topo_obs_cooling(Gauge_Conf const * const GC,
@@ -690,7 +777,8 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
                        GParam const * const param,
                        double *charge,
 											 double *chi_prime,
-                       double *meanplaq,	double *sum_q_timeslices, FILE *topchar_tprof_filep)
+                       double *meanplaq,	double *sum_q_timeslices, FILE *topchar_tprof_filep,
+                                          double complex *sum_q_MOM_timeslices, FILE *topchar_MOM_tprof_filep)
    {
    if(!(STDIM==4 && NCOLOR>1) && !(STDIM==2 && NCOLOR==1) )
      {
@@ -730,6 +818,12 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
 					(void) sum_q_timeslices;
 				}
 
+            if (param->d_topcharge_MOM_tprof_meas == 1)   FT_topcharge_timeslices(&helperconf, geo, param, sum_q_MOM_timeslices, (iter+1)*param->d_coolsteps, topchar_MOM_tprof_filep);
+            else
+            {
+               (void) sum_q_MOM_timeslices;
+            }
+
         plaquette(&helperconf, geo, param, &plaqs, &plaqt);
         #if(STDIM==4)
           meanplaq[iter]=0.5*(plaqs+plaqt);
@@ -740,6 +834,8 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
 
 		 if (param->d_topcharge_tprof_meas == 1) fflush(topchar_tprof_filep);
 		 else (void) topchar_tprof_filep;
+       if (param->d_topcharge_MOM_tprof_meas == 1) fflush(topchar_MOM_tprof_filep);
+       else (void) topchar_MOM_tprof_filep;
      free_gauge_conf(&helperconf, param); 
      }
    else   // no cooling
@@ -964,12 +1060,13 @@ void loc_topcharge_corr(Gauge_Conf const * const GC,
 void perform_measures_localobs(Gauge_Conf *GC,
                                Geometry const * const geo,
                                GParam const * const param,
-                               FILE *datafilep, FILE *chiprimefilep, FILE *topchar_tprof_filep)
+                               FILE *datafilep, FILE *chiprimefilep, FILE *topchar_tprof_filep, FILE *topchar_MOM_tprof_filep)
    {
    #if( (STDIM==4 && NCOLOR>1) || (STDIM==2 && NCOLOR==1) )
      int i, err;
      double plaqs, plaqt, polyre, polyim, *charge, *chi_prime, *meanplaq, charge_nocooling, chi_prime_nocooling;
 		 double *sum_q_timeslices;
+       double complex *sum_q_MOM_timeslices;
 
 		 // measure plaquette and polyakov loop
      plaquette(GC, geo, param, &plaqs, &plaqt);
@@ -998,6 +1095,20 @@ void perform_measures_localobs(Gauge_Conf *GC,
 		 }
 		 else { (void) sum_q_timeslices; }
 
+      if (param->d_topcharge_MOM_tprof_meas == 1)
+       {
+         int err=posix_memalign((void**) &(sum_q_MOM_timeslices), (size_t) DOUBLE_ALIGN, (size_t) param->d_size[0]*sizeof(double complex));
+         if(err!=0)
+         {
+            fprintf(stderr, "Problems in allocating the aux vector for topcharge tcorr MOM meas! (%s, %d)\n", __FILE__, __LINE__);
+            exit(EXIT_FAILURE);
+         }
+         //topcharge_timeslices(GC, geo, param, Resum_q_timeslices, 0, topchar_tprof_filep); 
+         FT_topcharge_timeslices(GC, geo, param, sum_q_MOM_timeslices, 0, topchar_MOM_tprof_filep);
+      fflush(topchar_MOM_tprof_filep);
+       }
+       else { (void) sum_q_MOM_timeslices;  }
+
      err=posix_memalign((void**)&charge, (size_t)DOUBLE_ALIGN, (size_t) param->d_coolrepeat * sizeof(double));
      if(err!=0)
        {
@@ -1022,7 +1133,9 @@ void perform_measures_localobs(Gauge_Conf *GC,
        exit(EXIT_FAILURE);
        }
 
-		 if (param->d_chi_prime_meas == 1 || param->d_topcharge_tprof_meas == 1 ) topo_obs_cooling(GC, geo, param, charge, chi_prime, meanplaq, sum_q_timeslices, topchar_tprof_filep);
+		 if (param->d_chi_prime_meas == 1 
+       || param->d_topcharge_tprof_meas == 1
+       || param->d_topcharge_MOM_tprof_meas == 1) topo_obs_cooling(GC, geo, param, charge, chi_prime, meanplaq, sum_q_timeslices, topchar_tprof_filep, sum_q_MOM_timeslices, topchar_MOM_tprof_filep);
 		 else topcharge_cooling(GC, geo, param, charge, meanplaq);
 
      for(i=0; i<param->d_coolrepeat; i++)

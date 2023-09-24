@@ -49,6 +49,10 @@ typedef struct GParam {
 	int d_chi_prime_meas;
 	int d_topcharge_tprof_meas;
 
+  // for MOM in measures
+  int d_topcharge_MOM_tprof_meas;
+  int d_topcharge_MOM_tprof_dir;
+
   // for gradient-flow evolution
   double d_gfstep;
 	int d_ngfsteps;
@@ -68,6 +72,7 @@ typedef struct GParam {
   char d_data_file[STD_STRING_LENGTH];
 	char d_chiprime_file[STD_STRING_LENGTH]; // print chi prime measures
 	char d_topcharge_tprof_file[STD_STRING_LENGTH]; // print topological charge time correlator measures
+  char d_topcharge_MOM_tprof_file[STD_STRING_LENGTH]; // print topological charge time correlator @ MOM measures
   char d_log_file[STD_STRING_LENGTH];
   char d_ml_file[STD_STRING_LENGTH];
 	char d_swap_acc_file[STD_STRING_LENGTH]; // print swap Metropolis acceptance
@@ -96,7 +101,7 @@ typedef struct GParam {
 void remove_white_line_and_comments(FILE *input);
 void readinput(char *in_file, GParam *param);
 void init_derived_constants(GParam *param);
-void init_data_file(FILE **dataf, FILE **chiprimefilep, FILE **topchar_tprof_f, GParam const * const param);
+void init_data_file(FILE **dataf, FILE **chiprimefilep, FILE **topchar_tprof_f, FILE **topchar_MOM_tprof_f, GParam const * const param);
 void free_hierarc_params(GParam *param);
 void print_parameters_local(GParam const * const param, time_t time_start, time_t time_end);
 void print_parameters_local_pt(GParam const * const param, time_t time_start, time_t time_end);

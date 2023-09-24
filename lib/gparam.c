@@ -89,6 +89,8 @@ void readinput(char *in_file, GParam *param)
 		// default = do not compute chi_prime
 		param->d_chi_prime_meas = 0;
 		param->d_topcharge_tprof_meas = 0;
+    param->d_topcharge_MOM_tprof_meas =0;
+    param->d_topcharge_MOM_tprof_dir = 1;
 
     input=fopen(in_file, "r"); // open the input file
     if(input==NULL)
@@ -292,6 +294,40 @@ void readinput(char *in_file, GParam *param)
 											exit(EXIT_FAILURE);
 										}
                   }
+           else if(strncmp(str, "topcharge_MOM_tprof_meas", 24)==0)
+                  {
+                  err=fscanf(input, "%d", &temp_i);
+                  if(err!=1)
+                    {
+                    fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                    exit(EXIT_FAILURE);
+                    }
+                  if ( (temp_i == 1) || (temp_i == 0 ) ) param->d_topcharge_MOM_tprof_meas=temp_i;
+                  else
+                    {
+                      fprintf(stderr, "Error: topcharge_MOM_tprof_meas must be either 0 or 1 in %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                      exit(EXIT_FAILURE);
+                    }
+                  }
+
+            else if(strncmp(str, "topcharge_MOM_tprof_dir", 23)==0)
+                  {
+                  err=fscanf(input, "%d", &temp_i);
+                  if(err!=1)
+                    {
+                    fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                    exit(EXIT_FAILURE);
+                    }
+                  if ( (temp_i == 1) || (temp_i == 2 ) || (temp_i == 3) ) param->d_topcharge_MOM_tprof_dir=temp_i;
+                  else
+                    {
+                      fprintf(stderr, "Error: topcharge_MOM_tprof_dir must be 1, 2 or 3 in %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                      exit(EXIT_FAILURE);
+                    }
+                  }
+
+            
+            
 									
            else if(strncmp(str, "topcharge_tprof_file", 20)==0)
                   { 
@@ -302,6 +338,17 @@ void readinput(char *in_file, GParam *param)
                     exit(EXIT_FAILURE);
                     }
                   strcpy(param->d_topcharge_tprof_file, temp_str);
+                  }
+
+            else if(strncmp(str, "topcharge_MOM_tprof_file", 24)==0)
+                  { 
+                  err=fscanf(input, "%s", temp_str);
+                  if(err!=1)
+                    {
+                    fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                    exit(EXIT_FAILURE);
+                    }
+                  strcpy(param->d_topcharge_MOM_tprof_file, temp_str);
                   }
 
            else if(strncmp(str, "gfstep", 6)==0) // integration step
@@ -776,7 +823,7 @@ void init_derived_constants(GParam *param)
 
 
 // initialize data file
-void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, GParam const * const param)
+void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, FILE **topchar_MOM_tprof_f, GParam const * const param)
 {
 	int i;
 
@@ -838,6 +885,28 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, GPar
 		{
 			(void) topchar_tprof_f;
 		}
+    // open topocharge_MOM_tprof data file
+    if (param->d_topcharge_MOM_tprof_meas == 1)
+    {
+      *topchar_MOM_tprof_f=fopen(param->d_topcharge_MOM_tprof_file, "r");
+      if(*topchar_MOM_tprof_f!=NULL) // file exists
+      {
+        fclose(*topchar_MOM_tprof_f);
+        *topchar_MOM_tprof_f=fopen(param->d_topcharge_MOM_tprof_file, "a");
+      }
+      else
+      {
+        *topchar_MOM_tprof_f=fopen(param->d_topcharge_MOM_tprof_file, "w");
+        fprintf(*topchar_MOM_tprof_f, "%d ", STDIM);
+        for(i=0; i<STDIM; i++) fprintf(*topchar_MOM_tprof_f, "%d ", param->d_size[i]);
+        fprintf(*topchar_MOM_tprof_f, "%d ", param->d_topcharge_MOM_tprof_dir);
+        fprintf(*topchar_MOM_tprof_f, "\n");
+      }
+    }
+    else
+    {
+      (void) topchar_MOM_tprof_f;
+    }
 	}
 	else
 	{
@@ -873,6 +942,18 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, GPar
 		{
 			(void) topchar_tprof_f;
 		}
+    // open topocharge_MOM_tprof data file
+    if (param->d_topcharge_MOM_tprof_meas == 1)
+    {
+      *topchar_MOM_tprof_f=fopen(param->d_topcharge_MOM_tprof_file, "w");
+      fprintf(*topchar_MOM_tprof_f, "%d ", STDIM);
+      for(i=0; i<STDIM; i++) fprintf(*topchar_MOM_tprof_f, "%d ", param->d_size[i]);
+      fprintf(*topchar_MOM_tprof_f, "\n");
+    }
+    else
+    {
+      (void) topchar_MOM_tprof_f;
+    }
 	}
 	fflush(*dataf);
 	if (param->d_chi_prime_meas == 1 ) fflush(*chiprimef);
@@ -885,6 +966,11 @@ void init_data_file(FILE **dataf, FILE **chiprimef, FILE **topchar_tprof_f, GPar
 		{
 			(void) topchar_tprof_f;
 		}
+  if (param->d_topcharge_MOM_tprof_meas == 1 ) fflush(*topchar_MOM_tprof_f);
+  else 
+    {
+      (void) topchar_MOM_tprof_f;
+    }
 }
 
 // free allocated memory for hierarc update parameters
