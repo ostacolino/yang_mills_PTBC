@@ -699,7 +699,7 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
    double inv_N_s = 1./N_s;
    double fase;
 
-   for(int kappa = 0; kappa<N_s+1; kappa++){       
+   for(int kappa = 0; kappa<1; kappa++){       
       for (int i=0; i<N_t; i++) {ris[i]=0.0+I*0.0;}
       #ifdef OPENMP_MODE
       #pragma omp parallel for num_threads(NTHREADS) private(r) reduction(+:ris[:N_t])
@@ -719,7 +719,7 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
       fprintf(topchar_MOM_tprof_filep, "\n");
    }
 
-   /*double complex **zp; //dummy array for storing measurements
+   double complex **zp; //dummy array for storing measurements
    int err=posix_memalign((void**)&zp, (size_t)2*DOUBLE_ALIGN, (size_t)N_s/2 * sizeof(complex*));
    if (err!=0){
         fprintf(stderr, "Problems in allocating a vector (%s, %d)\n", __FILE__, __LINE__);
@@ -766,7 +766,7 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
       }
       fprintf(topchar_MOM_tprof_filep, "\n");
    }
-   free(zp);*/
+   free(zp);
 }
 
 // compute topological observables (Q, chi_prime, Q(t)) after some cooling
