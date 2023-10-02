@@ -227,7 +227,7 @@ int main(int argc, char **argv)
                 for(int i=0; i<num_data; i++) // slide the file
                 {
                         err=0;
-                        for (int t=0; t<T; t++) err+=fscanf(fp, "%lf", &(single_line[t]));
+                        for (int t=0; t<2*T; t++) err+=fscanf(fp, "%lf", &(single_line[t]));
                         if(err!=2*T)
                         {
                                 fprintf(stderr, "Problems while reading input file %s: expecting %d field at line %d but %d found\n", input_file_name, T, i+1, err);
