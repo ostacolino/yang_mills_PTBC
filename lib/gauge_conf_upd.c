@@ -1474,7 +1474,8 @@ void update_with_trace_def(Gauge_Conf * GC,
 void cooling(Gauge_Conf *GC,
              Geometry const * const geo,
              GParam const * const param,
-             int n)
+             int n, //step cooling
+             int start) //start? If start=0 [0;Vol/2-1]->[Vol/2;Vol-1]
   {
   long r;
   int i, k;
@@ -1484,15 +1485,17 @@ void cooling(Gauge_Conf *GC,
      // cooling
      for(i=0; i<STDIM; i++)
         {
-        #ifdef OPENMP_MODE
-        #pragma omp parallel for num_threads(NTHREADS) private(r)
-        #endif
-        for(r=0; r<(param->d_volume)/2; r++)
-           {
-           GAUGE_GROUP staple;
-           calcstaples_wilson(GC, geo, param, r, i, &staple);
-           cool(&(GC->lattice[r][i]), &staple);
-           }
+        if (start==0){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r=0; r<(param->d_volume)/2; r++)
+            {
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
+                cool(&(GC->lattice[r][i]), &staple);
+            }
+       }
 
         #ifdef OPENMP_MODE
         #pragma omp parallel for num_threads(NTHREADS) private(r)
@@ -1503,8 +1506,21 @@ void cooling(Gauge_Conf *GC,
            calcstaples_wilson(GC, geo, param, r, i, &staple);
            cool(&(GC->lattice[r][i]), &staple);
            }
-        }
+        
+
+        if (start==1){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r=0; r<(param->d_volume)/2; r++)
+            {
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
+                cool(&(GC->lattice[r][i]), &staple);
+            }
+       }
      }
+}
 
   // final unitarization
   #ifdef OPENMP_MODE

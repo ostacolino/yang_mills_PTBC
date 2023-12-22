@@ -409,7 +409,8 @@ void update_with_trace_def(Gauge_Conf *GC,
 void cooling(Gauge_Conf *GC,
              Geometry const * const geo,
              GParam const * const param,
-             int n);
+             int n,
+             int start);
 void gradflow_RKstep(Gauge_Conf *GC,
                      Gauge_Conf *helper1,
                      Gauge_Conf *helper2,
