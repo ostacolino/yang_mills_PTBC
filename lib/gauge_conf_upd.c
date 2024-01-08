@@ -1480,9 +1480,9 @@ void cooling(Gauge_Conf *GC,
   long r;
   int i, k;
 
-  for(k=0; k<n; k++)
-     {
-     // cooling
+  //cooling normale
+
+  /*for(k=0; k<n; k++){
      for(i=0; i<STDIM; i++)
         {
         if (start==0){
@@ -1520,7 +1520,29 @@ void cooling(Gauge_Conf *GC,
             }
        }
      }
-}
+    }*/
+
+    //cooling_casuale
+
+    long sito;
+    sito = start;
+
+    for(k=0; k<n; k++){
+        for(i=0; i<STDIM; i++){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r = 0; r<param->d_volume; r++){
+
+                GAUGE_GROUP staple;
+                sito = (long)(casuale()*(double)param->d_volume);
+                //printf("Sito da aggiornare:%ld\n",sito);
+                calcstaples_wilson(GC, geo, param, sito, i, &staple);
+                cool(&(GC->lattice[sito][i]), &staple);
+            }
+        }
+    }
+
 
   // final unitarization
   #ifdef OPENMP_MODE
@@ -1533,7 +1555,7 @@ void cooling(Gauge_Conf *GC,
         unitarize(&(GC->lattice[r][i]));
         }
      }
-  }
+}
 
 
 // perform a single step of the Runge Kutta integrator for the Wilson flow
