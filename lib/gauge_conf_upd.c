@@ -1476,6 +1476,7 @@ void cooling(Gauge_Conf *GC,
              GParam const * const param,
              int n, //step cooling
              int start) //start? If start=0 [0;Vol/2-1]->[Vol/2;Vol-1]
+                        //       If start=1 [Vol/2;Vol-1]->[0;Vol/2-1]
   {
   long r;
   int i, k;
@@ -1525,19 +1526,47 @@ void cooling(Gauge_Conf *GC,
     //cooling_casuale
 
     long sito;
-    sito = start;
+    sito = start; //serve per togliere il warning senza aggiornare tutte le implementazioni delle funzioni...
 
-    for(k=0; k<n; k++){
+    /*for(k=0; k<n; k++){
         for(i=0; i<STDIM; i++){
             #ifdef OPENMP_MODE
             #pragma omp parallel for num_threads(NTHREADS) private(r)
             #endif
-            for(r = 0; r<param->d_volume; r++){
+            for(r = 0; r<(param->d_volume); r++){
 
                 GAUGE_GROUP staple;
-                sito = (long)(casuale()*(double)param->d_volume);
+                sito = (long)(casuale()*(double)(param->d_volume));
                 //printf("Sito da aggiornare:%ld\n",sito);
                 calcstaples_wilson(GC, geo, param, sito, i, &staple);
+                cool(&(GC->lattice[sito][i]), &staple);
+            }
+        }
+    }*/
+
+    //cooling All_even/All_odd
+
+    for(k=0; k<n; k++){
+        for(r=0; r<(param->d_volume)/2; r++){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(i = 0; i<STDIM; i++){
+
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
+                cool(&(GC->lattice[sito][i]), &staple);
+            }
+        }
+
+        for(r=(param->d_volume)/2; r<(param->d_volume)/2-1; r++){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(i = 0; i<STDIM; i++){
+
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
                 cool(&(GC->lattice[sito][i]), &staple);
             }
         }
