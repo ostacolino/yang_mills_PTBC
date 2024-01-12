@@ -1527,7 +1527,7 @@ void cooling(Gauge_Conf *GC,
 
     long sito;
     sito = start; //serve per togliere il warning senza aggiornare tutte le implementazioni delle funzioni...
-
+    sito++;
     /*for(k=0; k<n; k++){
         for(i=0; i<STDIM; i++){
             #ifdef OPENMP_MODE
@@ -1546,7 +1546,7 @@ void cooling(Gauge_Conf *GC,
 
     //cooling All_even/All_odd
 
-    for(k=0; k<n; k++){
+    /*for(k=0; k<n; k++){
         for(r=0; r<(param->d_volume)/2; r++){
             #ifdef OPENMP_MODE
             #pragma omp parallel for num_threads(NTHREADS) private(r)
@@ -1570,6 +1570,51 @@ void cooling(Gauge_Conf *GC,
                 cool(&(GC->lattice[sito][i]), &staple);
             }
         }
+    }*/
+
+    //cooling casual every step
+
+  for(k=0; k<n; k++){
+    start=(int)(casuale()*2);
+    //printf("start=%d\n",start);
+
+     for(i=0; i<STDIM; i++)
+        {
+        if (start==0){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r=0; r<(param->d_volume)/2; r++)
+            {
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
+                cool(&(GC->lattice[r][i]), &staple);
+            }
+       }
+
+        #ifdef OPENMP_MODE
+        #pragma omp parallel for num_threads(NTHREADS) private(r)
+        #endif
+        for(r=(param->d_volume)/2; r<(param->d_volume); r++)
+           {
+           GAUGE_GROUP staple;
+           calcstaples_wilson(GC, geo, param, r, i, &staple);
+           cool(&(GC->lattice[r][i]), &staple);
+           }
+        
+
+        if (start==1){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r=0; r<(param->d_volume)/2; r++)
+            {
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, r, i, &staple);
+                cool(&(GC->lattice[r][i]), &staple);
+            }
+       }
+     }
     }
 
 
