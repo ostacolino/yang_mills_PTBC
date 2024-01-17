@@ -1481,6 +1481,61 @@ void cooling(Gauge_Conf *GC,
   long r;
   int i, k;
 
+  //cooling estraggo un numero randomico in modo uniforme in [0:23] e poi lo converto in una permutazione dell'array
+  //[0;1;2;3] in modo da fare un cooling randomico lungo le direzioni
+
+  int direzione[4]={0,0,0,0};
+  int number = (int)(casuale()*24);
+  //printf("number=%2d-->", number);
+  direzione[0]=number / 6;
+  number %=6;
+  direzione[1]=number / 2;
+  number %=2;
+  direzione[2]=number / 1;
+  number %=1;
+  direzione[3]=number / 1;
+
+    for( k = 3; k >0; k--)
+        for(int j = k-1; j>=0;j--)
+            if(direzione[j]<=direzione[k])
+                direzione[k]++;
+
+
+    /*for( k = 0; k <4; k++)   {
+        printf("%d ",direzione[k]);}
+    printf("\n");*/
+
+    for(k = 0; k<n; k++){
+        for(int j =0; j<STDIM; j++){
+
+                i = direzione[j];
+                //printf("direzione[%d]:%d\n",j,i);
+                #ifdef OPENMP_MODE
+                #pragma omp parallel for num_threads(NTHREADS) private(r)
+                #endif
+                for(r=0; r<(param->d_volume)/2; r++){
+
+                    GAUGE_GROUP staple;
+                    calcstaples_wilson(GC, geo, param, r, i, &staple);
+                    cool(&(GC->lattice[r][i]), &staple);
+                }
+
+                #ifdef OPENMP_MODE
+                #pragma omp parallel for num_threads(NTHREADS) private(r)
+                #endif
+                for(r=(param->d_volume)/2; r<(param->d_volume); r++)
+                {
+                    GAUGE_GROUP staple;
+                    calcstaples_wilson(GC, geo, param, r, i, &staple);
+                    cool(&(GC->lattice[r][i]), &staple);
+                }
+
+            }
+    }
+
+
+
+
   //cooling normale
 
   /*for(k=0; k<n; k++){
@@ -1574,7 +1629,7 @@ void cooling(Gauge_Conf *GC,
 
     //cooling casual every step
 
-  for(k=0; k<n; k++){
+  /*for(k=0; k<n; k++){
     start=(int)(casuale()*2);
     //printf("start=%d\n",start);
 
@@ -1615,7 +1670,7 @@ void cooling(Gauge_Conf *GC,
             }
        }
      }
-    }
+    }*/
 
 
   // final unitarization
