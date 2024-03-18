@@ -1480,11 +1480,12 @@ void cooling(Gauge_Conf *GC,
   {
   long r;
   int i, k;
+  start=0;
 
   //cooling estraggo un numero randomico in modo uniforme in [0:23] e poi lo converto in una permutazione dell'array
   //[0;1;2;3] in modo da fare un cooling randomico lungo le direzioni
 
-  int direzione[4]={0,0,0,0};
+  /*int direzione[4]={0,0,0,0};
   int number = (int)(casuale()*24);
   //printf("number=%2d-->", number);
   direzione[0]=number / 6;
@@ -1498,12 +1499,12 @@ void cooling(Gauge_Conf *GC,
     for( k = 3; k >0; k--)
         for(int j = k-1; j>=0;j--)
             if(direzione[j]<=direzione[k])
-                direzione[k]++;
+                direzione[k]++;*/
 
 
     /*for( k = 0; k <4; k++)   {
         printf("%d ",direzione[k]);}
-    printf("\n");*/
+    printf("\n");
 
     for(k = 0; k<n; k++){
         for(int j =0; j<STDIM; j++){
@@ -1531,8 +1532,32 @@ void cooling(Gauge_Conf *GC,
                 }
 
             }
-    }
+    }*/
 
+  //Cooling Lexiografico progressivo
+
+  for(k=0; k<n; k++){
+     for(i=0; i<STDIM; i++)
+        {
+        if (start==0){
+            #ifdef OPENMP_MODE
+            #pragma omp parallel for num_threads(NTHREADS) private(r)
+            #endif
+            for(r=0; r<(param->d_volume); r++)
+            {
+                long si=lex_to_si(r,param);
+                GAUGE_GROUP staple;
+                calcstaples_wilson(GC, geo, param, si, i, &staple);
+                /*if(i==0){
+                    int coordinate[4];
+                    lex_to_cart(coordinate,r,param);
+                    printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si);
+                    }*/
+                cool(&(GC->lattice[r][i]), &staple);
+                }
+            }    
+        }
+    }
 
 
 
@@ -1549,6 +1574,11 @@ void cooling(Gauge_Conf *GC,
             {
                 GAUGE_GROUP staple;
                 calcstaples_wilson(GC, geo, param, r, i, &staple);
+                if(i==0){
+                    int coordinate[4];
+                    si_to_cart(coordinate,r,param);
+                    printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
+                }
                 cool(&(GC->lattice[r][i]), &staple);
             }
        }
@@ -1560,6 +1590,11 @@ void cooling(Gauge_Conf *GC,
            {
            GAUGE_GROUP staple;
            calcstaples_wilson(GC, geo, param, r, i, &staple);
+           if(i==0){
+                    int coordinate[4];
+                    si_to_cart(coordinate,r,param);
+                    printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
+                }
            cool(&(GC->lattice[r][i]), &staple);
            }
         
@@ -1580,10 +1615,10 @@ void cooling(Gauge_Conf *GC,
 
     //cooling_casuale
 
-    long sito;
+    /*long sito;
     sito = start; //serve per togliere il warning senza aggiornare tutte le implementazioni delle funzioni...
     sito++;
-    /*for(k=0; k<n; k++){
+    for(k=0; k<n; k++){
         for(i=0; i<STDIM; i++){
             #ifdef OPENMP_MODE
             #pragma omp parallel for num_threads(NTHREADS) private(r)
