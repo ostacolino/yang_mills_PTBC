@@ -1553,7 +1553,7 @@ void cooling(Gauge_Conf *GC,
                     lex_to_cart(coordinate,r,param);
                     printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si);
                     }*/
-                cool(&(GC->lattice[r][i]), &staple);
+                cool(&(GC->lattice[si][i]), &staple);
                 }
             }    
         }
