@@ -695,10 +695,10 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
    long r;
    int N_t = param->d_size[0];
    int N_s = param->d_size[1]; 
-   int coordinate[STDIM];     
-   int n_i;                    
+   //int coordinate[STDIM];     
+   //int n_i;                    
    double inv_N_s = 1./N_s;
-   double fase;
+   //double fase;
 
    for(int kappa = 0; kappa<1; kappa++){       
       for (int i=0; i<N_t; i++) {ris[i]=0.0+I*0.0;}
@@ -708,9 +708,11 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
       for(r=0; r<(param->d_volume); r++)
       {
          int t = geo->d_timeslice[r];
+	 int coordinate[STDIM];
+	 
          si_to_cart(coordinate,r,param);
-         n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
-
+         int n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
+	 double fase = 0.0;
          fase = (double) PI2 * n_i * inv_N_s * kappa ;
          ris[t] += loc_topcharge(GC, geo, param, r)*cexp(I*fase);
       }
@@ -743,9 +745,11 @@ void FT_topcharge_timeslices(Gauge_Conf const * const GC,
       for(r=0; r<(param->d_volume); r++)
       {
          int t = geo->d_timeslice[r];
+	 int coordinate[STDIM];
+	 
          si_to_cart(coordinate,r,param);
-         n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
-
+         int n_i = coordinate[param->d_topcharge_MOM_tprof_dir];
+	 double fase = 0.0;
          fase = (double) PI2 * n_i * inv_N_s * kappa ;
          ris[t] += loc_topcharge(GC, geo, param, r)*cexp(I*fase);
       }

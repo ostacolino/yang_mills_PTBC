@@ -1536,7 +1536,7 @@ void cooling(Gauge_Conf *GC,
 
   //Cooling Lexiografico progressivo
 
-  for(k=0; k<n; k++){
+  /*for(k=0; k<n; k++){
      for(i=0; i<STDIM; i++)
         {
         if (start==0){
@@ -1548,22 +1548,22 @@ void cooling(Gauge_Conf *GC,
                 long si=lex_to_si(r,param);
                 GAUGE_GROUP staple;
                 calcstaples_wilson(GC, geo, param, si, i, &staple);
-                /*if(i==0){
+                if(i==0){
                     int coordinate[4];
                     lex_to_cart(coordinate,r,param);
                     printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si);
-                    }*/
+                    }
                 cool(&(GC->lattice[si][i]), &staple);
                 }
             }    
         }
-    }
+    }*/
 
 
 
   //cooling normale
 
-  /*for(k=0; k<n; k++){
+  for(k=0; k<n; k++){
      for(i=0; i<STDIM; i++)
         {
         if (start==0){
@@ -1577,7 +1577,7 @@ void cooling(Gauge_Conf *GC,
                 if(i==0){
                     int coordinate[4];
                     si_to_cart(coordinate,r,param);
-                    printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
+                    //printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
                 }
                 cool(&(GC->lattice[r][i]), &staple);
             }
@@ -1593,7 +1593,7 @@ void cooling(Gauge_Conf *GC,
            if(i==0){
                     int coordinate[4];
                     si_to_cart(coordinate,r,param);
-                    printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
+                    //printf("sto agiornando il sito:%ld->[%d,%d,%d,%d]->%ld\n",r,coordinate[0],coordinate[1],coordinate[2],coordinate[3],si_to_lex(r,param));
                 }
            cool(&(GC->lattice[r][i]), &staple);
            }
@@ -1611,7 +1611,7 @@ void cooling(Gauge_Conf *GC,
             }
        }
      }
-    }*/
+    }
 
     //cooling_casuale
 
