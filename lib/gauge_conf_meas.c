@@ -795,15 +795,15 @@ void topo_obs_cooling(Gauge_Conf const * const GC,
      Gauge_Conf helperconf; 
      double ris, plaqs, plaqt;
      int iter;
-     int even_start = 0;
-     if (casuale()>0.5) even_start = 1;
+     /*int even_start = 0;
+     if (casuale()>0.5) even_start = 1;*/
 
      init_gauge_conf_from_gauge_conf(&helperconf, GC, param);
      // helperconf is a copy of the configuration
   
      for(iter=0; iter<(param->d_coolrepeat); iter++)
         {
-        cooling(&helperconf, geo, param, param->d_coolsteps, even_start);
+        cooling(&helperconf, geo, param, param->d_coolsteps);
 
         ris=topcharge(&helperconf, geo, param);
         charge[iter]=ris;
@@ -885,7 +885,7 @@ void check_correlation_decay_cooling(Gauge_Conf const * const GC, Geometry const
 		init_gauge_conf_from_gauge_conf(&helperconf, GC, param);
 		for(int iter=0; iter<(param->d_coolrepeat); iter++)
 		{
-			cooling(&helperconf, geo, param, param->d_coolsteps, 0);
+			cooling(&helperconf, geo, param, param->d_coolsteps);
 			Q = fabs(topcharge(&helperconf, geo, param));
 			satd = sum_abs_topcharge_dens(&helperconf, geo, param);
 			ratio[iter] = (satd-Q)/satd;
@@ -931,7 +931,7 @@ void topcharge_cooling(Gauge_Conf const * const GC,
   
      for(iter=0; iter<(param->d_coolrepeat); iter++)
         {
-        cooling(&helperconf, geo, param, param->d_coolsteps, 0);
+        cooling(&helperconf, geo, param, param->d_coolsteps);
 
         ris=topcharge(&helperconf, geo, param);
         charge[iter]=ris;
@@ -1002,7 +1002,7 @@ void loc_topcharge_corr(Gauge_Conf const * const GC,
      init_gauge_conf_from_gauge_conf(&helperconf, GC, param);
 
      // cool helperconf
-     cooling(&helperconf, geo, param, ncool, 0);
+     cooling(&helperconf, geo, param, ncool);
 
      #ifdef OPENMP_MODE
      #pragma omp parallel for num_threads(NTHREADS) private(r)
